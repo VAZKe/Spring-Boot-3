@@ -1,19 +1,21 @@
 package med.voll.api.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import med.voll.api.domain.consulta.AgendaDeConsultaService;
 import med.voll.api.domain.consulta.DatosAgendarConsulta;
+import med.voll.api.domain.consulta.DatosCancelamientoConsulta;
 import med.voll.api.domain.consulta.DatosDetalleConsulta;
+import med.voll.api.domain.consulta.validaciones.ValidadorDeConsultas;
+import med.voll.api.infra.errores.ValidacionDeIntegridad;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/consultas")
+@SecurityRequirement(name = "bearer-key")
 public class ConsultaController {
 
     @Autowired
@@ -21,10 +23,19 @@ public class ConsultaController {
 
     @PostMapping
     @Transactional
-    ResponseEntity agendar(@RequestBody @Valid DatosAgendarConsulta datos) {
+    public ResponseEntity agendar(@RequestBody @Valid DatosAgendarConsulta datos) throws ValidacionDeIntegridad {
 
-        service.agendar(datos);
+        var response = service.agendar(datos);
 
-        return ResponseEntity.ok(new DatosDetalleConsulta(null,null,null,null));
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping
+    @Transactional
+    public ResponseEntity cancelar(@RequestBody @Valid DatosCancelamientoConsulta datos) throws ValidacionDeIntegridad {
+
+        service.cancelar(datos);
+
+        return ResponseEntity.noContent().build();
     }
 }
